@@ -16,6 +16,8 @@ app.use(express.json())
 
 //Rutas
 app.use('/api/usuarios', require('./routes/usuarios'));
+app.use('/api/login', require('./routes/auth'));
+
 
 //Base de datos
 dbConnection()
