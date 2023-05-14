@@ -3,12 +3,18 @@ const usuario = require("../models/usuario");
 const bcrypt = require("bcryptjs");
 
 const getUsuarios = async (req, res) => {
-  const usuarios = await usuario.find();
+  const from = Number(req.query.from) || 0;
+
+  const [usuarios, total] = await Promise.all([
+    usuario.find({}, "nombre email role google").skip(from).limit(5),
+    usuario.count(),
+  ]);
 
   res.json({
     ok: true,
     usuarios,
-    uid: req.uid
+    total,
+    uid: req.uid,
   });
 };
 
@@ -57,9 +63,9 @@ const crearUsuario = async (req, res) => {
   //Guardar usuario
   await usuarioNuevo.save();
 
-  const token = await generarJWT(usuario.id)
+  const token = await generarJWT(usuario.id);
 
-  res.json({ ok: true, usuarioNuevo,token });
+  res.json({ ok: true, usuarioNuevo, token });
 };
 
 const updateUsuario = async (req, res) => {
