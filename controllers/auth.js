@@ -1,54 +1,64 @@
-const {response} = require('express')
-const usuario = require('../models/usuario')
-const bcrypt = require('bcryptjs')
-const { generarJWT } = require('../helpers/jwt')
+const { response } = require("express");
+const usuario = require("../models/usuario");
+const bcrypt = require("bcryptjs");
+const { generarJWT } = require("../helpers/jwt");
+const googleVerify = require("../helpers/google-verify");
 
-const login = async (req, res=response) => {
+const login = async (req, res = response) => {
+  const { email, password } = req.body;
 
-    const {email,password} = req.body
+  try {
+    //Check email
+    const usuarioDB = await usuario.findOne({ email });
 
-    try {
-        //Check email
-        const usuarioDB = await usuario.findOne({email})
-
-        if(!usuarioDB) {
-            return res.status(404).json({
-                ok:false,
-                msg:'Usuario no encontrado'
-            })
-        }
-        
-        //Check password
-        const validPassword = bcrypt.compareSync(String(password),usuarioDB.password)
-        if(!validPassword) {
-            return res.status(404).json({
-                ok:false,
-                msg:'Contraseña errónea'
-            })
-        }
-
-        const token = await generarJWT(usuarioDB.id)
-
-
-        res.json({
-            ok:true,
-            token
-        })
-    } catch (error) {
-        res.status(500).json({
-            ok:false,
-            msg:'Error en el login'
-        })
+    if (!usuarioDB) {
+      return res.status(404).json({
+        ok: false,
+        msg: "Usuario no encontrado",
+      });
     }
-}
 
-const googleSignIn = (req, res) => {
-    
-            res.json({
-                ok:true,
-                msg: req.body.token
-            })
+    //Check password
+    const validPassword = bcrypt.compareSync(
+      String(password),
+      usuarioDB.password
+    );
+    if (!validPassword) {
+      return res.status(404).json({
+        ok: false,
+        msg: "Contraseña errónea",
+      });
+    }
 
-}
+    const token = await generarJWT(usuarioDB.id);
 
-module.exports = {login,googleSignIn}
+    res.json({
+      ok: true,
+      token,
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      msg: "Error en el login",
+    });
+  }
+};
+
+const googleSignIn = async (req, res) => {
+  try {
+    const { email, name, picture } = await googleVerify(req.body.token);
+    res.json({
+      ok: true,
+      name,
+      email,
+      picture,
+    });
+  } catch (error) {
+    res.status(400).json({
+      ok: false,
+      msg: "Token de google incorrecto",
+    });
+  }
+};
+
+module.exports = { login, googleSignIn };
