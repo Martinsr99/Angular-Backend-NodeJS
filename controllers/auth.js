@@ -9,7 +9,7 @@ const login = async (req, res = response) => {
 
   try {
     //Check email
-    const usuarioDB = await usuario.findOne({ email });
+    const usuarioDB = await Usuario.findOne({ email });
 
     if (!usuarioDB) {
       return res.status(404).json({
@@ -84,4 +84,17 @@ const googleSignIn = async (req, res) => {
   }
 };
 
-module.exports = { login, googleSignIn };
+const renewToken = async(req,res) => {
+
+  const uid = req.uid
+
+  const token = await generarJWT(uid)
+
+  res.json({
+    ok:true,
+    token
+  })
+
+}
+
+module.exports = { login, googleSignIn,renewToken };
