@@ -13,6 +13,6 @@ async function googleVerify(token) {
   // const domain = payload['hd'];
   return payload
 }
-verify().catch(console.error);
+googleVerify().catch(console.error);
 
 module.exports = googleVerify

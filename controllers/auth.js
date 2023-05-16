@@ -1,5 +1,5 @@
 const { response } = require("express");
-const usuario = require("../models/usuario");
+const Usuario = require("../models/usuario");
 const bcrypt = require("bcryptjs");
 const { generarJWT } = require("../helpers/jwt");
 const googleVerify = require("../helpers/google-verify");
@@ -47,6 +47,29 @@ const login = async (req, res = response) => {
 const googleSignIn = async (req, res) => {
   try {
     const { email, name, picture } = await googleVerify(req.body.token);
+
+    const usuarioDB = await Usuario.findOne({ email})
+    let usuario;
+
+    if(!usuarioDB){
+      usuario = new Usuario({
+        nombre:name,
+        email,
+        password:'@@@',
+        img:picture,
+        google:true
+      })
+    } else{
+      usuario = usuarioDB
+      usuario.google = true
+    }
+
+    //Guardar usuario
+    await usuario.save()
+
+    //Generar token
+    const token = await generarJWT(usuario.id)
+
     res.json({
       ok: true,
       name,
