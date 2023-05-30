@@ -7,7 +7,7 @@ const {
   actualizarMedico,
   getMedicoById
 } = require("../controllers/medicos");
-const validarJWT = require("../middlewares/validar-jwt");
+const {validarJWT} = require("../middlewares/validar-jwt");
 const { check } = require("express-validator");
 const { validarCampos } = require("../middlewares/validar-campos");
 
